@@ -2,6 +2,7 @@
 
 import datetime as dt
 import time
+from .util import filename_for_time
 
 import cv2
 
@@ -23,11 +24,13 @@ class VideoWriter:
         now = dt.datetime.now()
         terminate_at = now + self.duration
 
-        increment = round(int(time.time()) / 5)
+        filename = filename_for_time(
+            time.time()
+        )
 
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Be sure to use the lower case
-        out = cv2.VideoWriter(f'videos/{increment}.mp4', fourcc, 20.0, self.shape)
+        out = cv2.VideoWriter(filename, fourcc, 20.0, self.shape)
 
         while dt.datetime.now() < terminate_at:
             ret, img = self.cap.read()
