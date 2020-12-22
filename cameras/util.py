@@ -1,5 +1,6 @@
 def filename_for_time(
-        seconds
+        seconds,
+        duration
 ):
-    increment = round(seconds / 5)
+    increment = round(seconds / duration)
     return f'videos/{increment}.mp4'

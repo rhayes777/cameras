@@ -10,6 +10,7 @@ import cv2
 class VideoWriter:
     def __init__(self, cap, duration: int):
         self.cap = cap
+        self._duration = duration
         self.duration = dt.timedelta(
             seconds=duration
         )
@@ -25,7 +26,8 @@ class VideoWriter:
         terminate_at = now + self.duration
 
         filename = filename_for_time(
-            time.time()
+            time.time(),
+            duration=self._duration
         )
 
         # Define the codec and create VideoWriter object
@@ -35,7 +37,7 @@ class VideoWriter:
         while dt.datetime.now() < terminate_at:
             ret, img = self.cap.read()
 
-            if ret:
+            if img is not None:
                 # write the flipped frame
                 out.write(img)
 
