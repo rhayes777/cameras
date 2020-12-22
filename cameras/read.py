@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import os
+
+import time
 
 import cv2 as cv
-import time
+
 from .util import filename_for_time
 
 
@@ -15,16 +16,8 @@ class Reader:
             time.time() - self.lag
         )
 
-    def run(self):
-        while os.path.exists(
-            self.filename()
-        ):
-            self.show()
-
     def show(self):
-        cap = cv.VideoCapture(
-            self.filename()
-        )
+        cap = cv.VideoCapture(self.filename())
         while cap.isOpened():
             ret, frame = cap.read()
             # if frame is read correctly ret is True
@@ -32,12 +25,20 @@ class Reader:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
             cv.imshow('frame', frame)
+            if cv.waitKey(1) == ord('q'):
+                break
         cap.release()
+
+    def run(self):
+        while True:
+            if cv.waitKey(1) == ord('q'):
+                break
+            self.show()
 
 
 def read():
-    reader = Reader(10)
-    reader.run()
+    Reader(10).run()
+    cv.destroyAllWindows()
 
 
 if __name__ == "__main__":
