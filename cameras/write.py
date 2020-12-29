@@ -20,7 +20,7 @@ class Recorder(threading.Thread):
             self.record()
 
     def record(self):
-        filename = f"{time.time() / self.interval}.mp4"
+        filename = f"{int(time.time() / self.interval)}.mp4"
         subprocess.Popen([
             "ffmpeg", "-f", "avfoundation", "-framerate", "30", "-i", "default", filename
         ])
