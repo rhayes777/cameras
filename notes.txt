@@ -1,1 +1,2 @@
 ffmpeg -f avfoundation -framerate 30 -i default output.mp4
+/Applications/VLC.app/Contents/MacOS/VLC output.mp4
