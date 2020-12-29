@@ -1,62 +1,38 @@
-#!/usr/bin/env python
-
-import datetime as dt
+import subprocess
+import threading
 import time
-from .util import filename_for_time
 
-import cv2
-
-
-class VideoWriter:
-    def __init__(self, cap, duration: int):
-        self.cap = cap
-        self._duration = duration
-        self.duration = dt.timedelta(
-            seconds=duration
-        )
-
-        # Get the width and height of frame
-        self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
-        self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
-
-        self.shape = (self.width, self.height)
-
-    def capture(self):
-        now = dt.datetime.now()
-        terminate_at = now + self.duration
-
-        filename = filename_for_time(
-            time.time(),
-            duration=self._duration
-        )
-
-        # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Be sure to use the lower case
-        out = cv2.VideoWriter(filename, fourcc, 20.0, self.shape)
-
-        while dt.datetime.now() < terminate_at:
-            ret, img = self.cap.read()
-
-            if img is not None:
-                # write the flipped frame
-                out.write(img)
-
-        out.release()
+WAIT_SECONDS = 1
 
 
-def write():
-    cap = cv2.VideoCapture(1)
+# ffmpeg -f avfoundation -framerate 30 -i default output.mp4
+# /Applications/VLC.app/Contents/MacOS/VLC output.mp4
 
-    writer = VideoWriter(cap, 5)
 
-    while True:
-        writer.capture()
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+class Recorder(threading.Thread):
+    def __init__(self, interval):
+        self.interval = interval
+        self.stopped = threading.Event()
+        super().__init__()
 
-    cap.release()
-    cv2.destroyAllWindows()
+    def run(self):
+        while not self.stopped.wait(self.interval):
+            self.record()
+
+    def record(self):
+        filename = f"{time.time() / self.interval}.mp4"
+        subprocess.Popen([
+            "ffmpeg", "-f", "avfoundation", "-framerate", "30", "-i", "default", filename
+        ])
+
+
+def foo():
+    print(time.ctime())
+    threading.Timer(WAIT_SECONDS, foo).start()
 
 
 if __name__ == "__main__":
-    write()
+    recorder = Recorder(
+        5
+    )
+    recorder.start()
