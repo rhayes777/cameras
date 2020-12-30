@@ -2,8 +2,6 @@ import subprocess
 import threading
 import time
 
-WAIT_SECONDS = 1
-
 
 # ffmpeg -f avfoundation -framerate 30 -i default output.mp4
 # /Applications/VLC.app/Contents/MacOS/VLC output.mp4
@@ -24,11 +22,6 @@ class Recorder(threading.Thread):
         subprocess.Popen([
             "ffmpeg", "-f", "avfoundation", "-t", str(self.interval), "-framerate", "30", "-i", "default", filename
         ])
-
-
-def foo():
-    print(time.ctime())
-    threading.Timer(WAIT_SECONDS, foo).start()
 
 
 if __name__ == "__main__":
