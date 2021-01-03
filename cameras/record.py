@@ -1,31 +1,53 @@
+import os
 import subprocess
 import threading
 import time
 
-
-# ffmpeg -f avfoundation -framerate 30 -i default output.mp4
-# /Applications/VLC.app/Contents/MacOS/VLC output.mp4
+from abc import ABC, abstractmethod
 
 
-class Recorder(threading.Thread):
-    def __init__(self, interval):
+class VideoThread(threading.Thread, ABC):
+    def __init__(self, interval, directory):
         self.interval = interval
         self.stopped = threading.Event()
+        self.directory = directory
         super().__init__()
+
+    def _filename_at_time(self, seconds: float):
+        return f"{self.directory}/{int(seconds / self.interval)}.mp4"
 
     def run(self):
         while not self.stopped.wait(self.interval):
-            self.record()
+            self.do()
 
-    def record(self):
-        filename = f"{int(time.time() / self.interval)}.mp4"
+    @abstractmethod
+    def do(self):
+        pass
+
+
+class Player(VideoThread):
+    def __init__(self, interval, lag, directory):
+        super().__init__(interval, directory)
+        self.lag = lag
+
+    def do(self):
+        filename = self._filename_at_time(
+            time.time() - self.lag
+        )
+        print(f"Attempting to play {filename}")
+        if os.path.exists(filename):
+            subprocess.Popen([
+                "/Applications/VLC.app/Contents/MacOS/VLC", filename
+            ])
+        else:
+            print("Does not exist")
+
+
+class Recorder(VideoThread):
+    def do(self):
+        filename = self._filename_at_time(
+            time.time()
+        )
         subprocess.Popen([
             "ffmpeg", "-f", "avfoundation", "-t", str(self.interval), "-framerate", "30", "-i", "default", filename
         ])
-
-
-if __name__ == "__main__":
-    recorder = Recorder(
-        5
-    )
-    recorder.start()
